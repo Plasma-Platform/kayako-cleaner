@@ -1,39 +1,53 @@
+create table ticketids SELECT ticketid FROM swtickets WHERE dateline<1546300800;
+--Query OK, 246203 rows affected (0.26 sec)
+--Records: 246203 Duplicates: 0 Warnings: 0
 
--- Create tmp tables
-DROP TEMPORARY TABLE IF EXISTS ticketids;
-DROP TEMPORARY TABLE IF EXISTS trackids;
 
-CREATE TEMPORARY TABLE ticketids (ticketid INT);
-CREATE TEMPORARY TABLE trackids (tickettimetrackid INT);
+select max(ticketid) from ticketids limit 5;
+--+---------------+
+--| max(ticketid) |
+--+---------------+
+--|       777637 |
 
--- Fill temp tables
-INSERT INTO ticketids(ticketid) 
-SELECT ticketid FROM swtickets WHERE (dateline + (86400 * 90) < UNIX_TIMESTAMP(NOW()));
+create index swticketmessageids_ticketid on swticketmessageids (ticketid);
+create index swticketposts_ticketid on swticketposts  (ticketid);
 
-INSERT INTO trackids(tickettimetrackid) 
-SELECT tickettimetrackid FROM swtickettimetracks A LEFT JOIN ticketids B ON A.ticketid = B.ticketid;
-    
--- Cleanup all ticket-related tables
-DELETE A FROM swtickets              A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swticketpostlocks      A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swticketlocks          A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swticketlinkchains     A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swticketfollowups      A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swticketdrafts         A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swattachments          A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swescalationpaths      A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swticketnotes          A JOIN ticketids B ON A.linktypeid = B.ticketid;
-DELETE A FROM swticketauditlogs      A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swticketlinkedtables   A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swticketmergelog       A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swticketmessageids     A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swticketposts          A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swticketrecipients     A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swticketwatchers       A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swcustomfieldvalues    A JOIN ticketids B ON A.typeid = B.ticketid;
-DELETE A FROM swtickettimetracks     A JOIN ticketids B ON A.ticketid = B.ticketid;
-DELETE A FROM swtickettimetracknotes A JOIN trackids B ON A.tickettimetrackid = B.tickettimetrackid;
 
--- Drop tmp tables
-DROP TEMPORARY TABLE IF EXISTS ticketids;
-DROP TEMPORARY TABLE IF EXISTS trackids;
+DELETE A FROM swtickets              A where  A.ticketid <= 777637;
+DELETE A FROM swticketpostlocks      A where  A.ticketid <= 777637;
+DELETE A FROM swticketlocks          A where  A.ticketid <= 777637;
+DELETE A FROM swticketlinkchains     A where  A.ticketid <= 777637;
+DELETE A FROM swticketfollowups      A where  A.ticketid <= 777637;
+DELETE A FROM swticketdrafts         A where  A.ticketid <= 777637;
+DELETE A FROM swattachments          A where  A.ticketid <= 777637;
+DELETE A FROM swescalationpaths      A where  A.ticketid <= 777637;
+DELETE A FROM swticketauditlogs      A where  A.ticketid <= 777637;
+DELETE A FROM swticketlinkedtables   A where  A.ticketid <= 777637;
+DELETE A FROM swticketmergelog       A where  A.ticketid <= 777637;
+DELETE A FROM swticketmessageids     A where  A.ticketid <= 777637;
+
+DELETE A FROM swticketposts          A where  A.ticketid <= 777637;
+
+DELETE A FROM swticketrecipients     A where  A.ticketid <= 777637;
+DELETE A FROM swticketwatchers       A where  A.ticketid <= 777637;
+
+DELETE A FROM swtickettimetracks     A where  A.ticketid <= 777637;
+
+DELETE A FROM swticketnotes          A where A.linktypeid <= 777637;
+DELETE A FROM swcustomfieldvalues    A where A.typeid <= 777637;
+
+select min(tickettimetrackid),min(ticketid)  from swtickettimetracks ;
+--+------------------------+---------------+
+--| min(tickettimetrackid) | min(ticketid) |
+--+------------------------+---------------+
+--|                1290664 |        777638 |
+--+------------------------+---------------+
+
+
+DELETE A FROM swtickettimetracknotes A where A.tickettimetrackid < 1290664;
+
+drop index swticketmessageids_ticketid on swticketmessageids ;
+drop index swticketposts_ticketid on swticketposts  ;
+
+
+drop table ticketids ;
